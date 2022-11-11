@@ -17,7 +17,6 @@ class PromotionCache{
         $key = sprintf("valid-for-product-%d", $product->getId());
         return $this->cache->get($key, function(ItemInterface $item)
         use ($product, $requestDate){
-            dump("yesy");
             return $this->repository->findValidForProduct(
                 $product, date_create_immutable($requestDate)
             );
