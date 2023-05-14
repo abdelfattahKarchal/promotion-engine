@@ -1,0 +1,16 @@
+config:
+  target: "http://localhost:8000"
+  phases:
+    - duration: 1
+      arrivalRate: 1
+scenarios:
+  - name: "Search and buy"
+    flow:
+      - post:
+          url: "/products/1/lowest-price"
+          json:
+            quantity: -5
+            request_location: "MA"
+            voucher_code: "OU812"
+            request_date: "2022-11-30"
+            product_id: 1

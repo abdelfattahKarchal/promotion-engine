@@ -10,6 +10,7 @@ use App\Filter\PromotionFilterInterface;
 use App\Repository\ProductRepository;
 use App\Service\Serializer\SerializerDTO;
 use Doctrine\ORM\EntityManagerInterface;
+use JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -36,7 +37,7 @@ class ProductsController extends AbstractController
     PromotionFilterInterface $promotionFilter,
     PromotionCache $promotionCache
     ): Response{
-        
+                
         if ($request->headers->has('force-fail')) {
             return new JsonResponse(
                 ["error" => "Promotion engin failure message"],
@@ -49,7 +50,8 @@ class ProductsController extends AbstractController
         $lowsetPriceEnquiry = $serializer->deserialize($request->getContent(), LowestPriceEnquiryDTO::class, 'json');
         // 2- Pass the enquiry to promotion filter + the appropriate promotion will be applied
 
-        $product = $this->repository->find($id); // Add error handling for not found product
+        $product = $this->repository->findOrFail($id);
+
         $lowsetPriceEnquiry->setProduct($product);
 
         $promotions = $promotionCache->findValidForProduct($product, $lowsetPriceEnquiry->getRequestDate());
@@ -60,7 +62,8 @@ class ProductsController extends AbstractController
         // 3- return the modified Enquiry
         $responseContent = $serializer->serialize($modifiedEnquiry, 'json');
 
-        return new Response($responseContent, 200, ['Content-Type' => 'application/json']);
+        return new JsonResponse(data: $responseContent, status: Response::HTTP_OK, json: true);
+        //return new Response($responseContent, 200, ['Content-Type' => 'application/json']);
 
         //return new JsonResponse($lowsetPriceEnquiry,200);
     }
